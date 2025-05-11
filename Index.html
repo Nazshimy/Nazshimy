@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מחשבון עלויות נסיעה</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f7f9fc;
+      color: #333;
+      margin: 0;
+      padding: 2rem;
+      line-height: 1.5;
+    }
+
+    main {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 0.75em;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    button {
+      background: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .results {
+      background: #e9f7ef;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+
+      main {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>מחשבון עלויות נסיעה</h1>
+
+    <label for="insurance">עלות ביטוח לנסיעה זו:</label>
+    <input list="insurance-list" type="number" id="insurance" value="30" min="0">
+    <datalist id="insurance-list">
+      <option value="0">
+      <option value="10">
+      <option value="20">
+      <option value="30">
+      <option value="40">
+      <option value="50">
+    </datalist>
+
+    <label for="fuel-price">מחיר דלק לליטר:</label>
+    <input type="number" id="fuel-price" value="7.13" min="0" step="0.01">
+
+    <label for="fuel-efficiency">צריכת דלק (ק״מ לליטר):</label>
+    <input type="number" id="fuel-efficiency" value="15" min="0.1" step="0.1">
+
+    <label for="distance">מספר קילומטרים לנסיעה:</label>
+    <input type="number" id="distance" min="0.1" step="0.1">
+
+    <label>
+      <input type="checkbox" id="show-delivery"> הוסף פרטי משלוח
+    </label>
+
+    <div id="delivery-section" class="hidden">
+      <label for="delivery-price">מחיר משלוח המשולם לנהג:</label>
+      <input type="number" id="delivery-price" min="0" step="0.1">
+    </div>
+
+    <button onclick="calculate()">חשב</button>
+
+    <div id="results" class="results hidden"></div>
+  </main>
+
+  <script>
+    const deliveryToggle = document.getElementById('show-delivery');
+    const deliverySection = document.getElementById('delivery-section');
+    const resultsDiv = document.getElementById('results');
+
+    deliveryToggle.addEventListener('change', () => {
+      deliverySection.classList.toggle('hidden', !deliveryToggle.checked);
+    });
+
+    function calculate() {
+      const insurance = parseFloat(document.getElementById('insurance').value);
+      const fuelPrice = parseFloat(document.getElementById('fuel-price').value);
+      const efficiency = parseFloat(document.getElementById('fuel-efficiency').value);
+      const distance = parseFloat(document.getElementById('distance').value);
+
+      if (
+        isNaN(insurance) || insurance < 0 ||
+        isNaN(fuelPrice) || fuelPrice <= 0 ||
+        isNaN(efficiency) || efficiency <= 0 ||
+        isNaN(distance) || distance <= 0
+      ) {
+        resultsDiv.innerHTML = "נא למלא את כל השדות עם ערכים תקינים.";
+        resultsDiv.classList.remove("hidden");
+        return;
+      }
+
+      const fuelCost = (distance / efficiency) * fuelPrice;
+      const totalCost = fuelCost + insurance;
+      let output = `<strong>עלות הנסיעה הכוללת:</strong> ${totalCost.toFixed(2)} ₪`;
+
+      if (deliveryToggle.checked) {
+        const deliveryPrice = parseFloat(document.getElementById('delivery-price').value);
+        if (isNaN(deliveryPrice) || deliveryPrice < 0) {
+          resultsDiv.innerHTML = "נא להזין ערך תקין למחיר המשלוח.";
+          resultsDiv.classList.remove("hidden");
+          return;
+        }
+
+        const netProfit = deliveryPrice - totalCost;
+        const travelTimeMin = distance;
+        const travelTimeHr = travelTimeMin / 60;
+        let profitPerHour = "לא רלוונטי לק״מ 0";
+
+        if (travelTimeHr > 0) {
+          profitPerHour = (netProfit / travelTimeHr).toFixed(2) + " ₪";
+        }
+
+        output += `<br><strong>רווח נטו:</strong> ${netProfit.toFixed(2)} ₪`;
+        output += `<br><strong>זמן נסיעה משוער:</strong> ${travelTimeMin.toFixed(0)} דקות`;
+        output += `<br><strong>רווח נטו לשעה:</strong> ${profitPerHour}`;
+      }
+
+      resultsDiv.innerHTML = output;
+      resultsDiv.classList.remove("hidden");
+    }
+  </script>
+</body>
+  </html>
+  
